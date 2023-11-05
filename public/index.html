@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Location Track Test</title>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvhOGoz1mwbXEFxIPd2OhA4nn7kntFbUk"></script>
+</head>
+
+<body>
+    <h1>Location Tracking</h1>
+    <button id="startTracking">Start Tracking</button>
+    <button id="stopTracking">Stop Tracking</button>
+    <div id="map" style="width: 100%; height: 400px;"></div>
+    
+</body>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<script>
+    const socket = io('http://localhost:8080/');
+    socket.on('connection');
+    let watchId;
+    console.log(watchId, "<<<watchId")
+    const map = new google.maps.Map(document.getElementById('map'), {
+        center: { lat:29.41392394576434, lng: 75.77570693177172  },
+        zoom: 10
+    });
+//<iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d13902.034965610008!2d75.77570693177172!3d29.41392394576434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x391180bf632c7135%3A0x2df00f9b61797881!2sPabra%2C%20Haryana%20125112!5e0!3m2!1sen!2sin!4v1696838026306!5m2!1sen!2sin" />
+    socket.on('locationUpdated', (locationData) => {
+        // Update the map marker with the new location 
+        console.log('Received location update:', locationData)
+        if (
+            locationData &&
+            typeof locationData === 'object' &&
+            !isNaN(locationData.latitude) &&
+            !isNaN(locationData.longitude)
+        ) {
+            const latLng = new google.maps.LatLng(locationData.latitude, locationData.longitude);
+            const marker = new google.maps.Marker({
+                position: latLng,
+                map: map,
+                title: 'User Location'
+            });
+            map.setCenter(latLng);
+        } else {
+            console.error('Invalid location data:', locationData);
+        }
+        // Log the result of setCenter for debugging
+        console.log('Map center set to:', map.getCenter().lat(), map.getCenter().lng());
+    });
+    document.getElementById('startTracking').addEventListener('click', () => {
+        console.log("loading ...")
+        if ("geolocation" in navigator) {
+            watchId = navigator.geolocation.getCurrentPosition((position) => {
+
+                console.log(position,"<<<<")
+                const locationData = {
+                    latitude: Number(position.coords.latitude),
+                    longitude: Number(position.coords.longitude)
+                };
+                console.log(watchId, "<<<watchId", locationData)
+                socket.emit('locationUpdate', locationData);
+            });
+        } else {
+            console.error('Geolocation is not available.');
+        }
+    });
+
+    document.getElementById('stopTracking').addEventListener('click', () => {
+        if (watchId) {
+            navigator.geolocation.clearWatch(watchId);
+        }
+    });
+</script>
+
+</html>
