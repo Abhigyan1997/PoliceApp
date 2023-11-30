@@ -116,7 +116,7 @@ exports.AdminLogin = async (req, res) => {
           accessToken: token,
         });
     } catch (error) {
-      res.status(500).json({ error: error.message });
+      res.status(500).json("issue",{ error: error.message });
     }
   };  
 

@@ -71,7 +71,7 @@ app.use("/registerPolice" , registerLoginPolicemen);
 app.use("/changeStatusOfComplaint" , ComplaintStatusChangeRouter);
 app.use("/getComplaints" , AllComplaintBasisOnStatusRouter);
 
-// emergancy  call routes
+// emergency  call routes
 app.use('/user', emergancyRoute);
 app.use('/user', sendNotification);
 app.use('/police', getnotificationRoute);
